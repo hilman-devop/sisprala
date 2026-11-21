@@ -1,5 +1,6 @@
 # SISPRALA — Asset Lending System
 
+[![Test SISPRALA](https://github.com/hilman-devop/sisprala/actions/workflows/test.yml/badge.svg)](https://github.com/hilman-devop/sisprala/actions/workflows/test.yml)
 > Sistem peminjaman sarana prasarana dengan QR per barang, autentikasi scrypt, CSRF protection, denda otomatis, dan audit keamanan tertulis.
 
 **Stack:** Node.js 22 · Express · SQLite · Security
