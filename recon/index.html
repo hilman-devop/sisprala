@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pinzup — Sistem Informasi Peminjaman Barang</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+/* ══════════════════════════════════════
+   LANDING PAGE STYLES
+══════════════════════════════════════ */
+#landing-page {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background: #0a1628;
+  color: #e8eaf6;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* LANDING NAVBAR */
+#landing-page .lnav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 48px;
+  background: rgba(10,22,40,0.85);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(25,196,178,0.1);
+  transition: box-shadow .3s;
+}
+#landing-page .lnav.scrolled { box-shadow: 0 4px 32px rgba(0,0,0,0.4); }
+#landing-page .lnav-logo {
+  display: flex; align-items: center; gap: 12px; text-decoration: none;
+}
+#landing-page .lnav-logo img { width: 36px; height: 40px; }
+#landing-page .lnav-logo-text {
+  font-size: 20px; font-weight: 800; color: #fff; letter-spacing: -.5px;
+}
+#landing-page .lnav-logo-text span { color: #19C4B2; }
+#landing-page .lnav-cta {
+  background: #19C4B2; color: #fff;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 14px; font-weight: 700;
+  padding: 10px 24px; border-radius: 100px;
+  border: none; cursor: pointer;
+  transition: background .2s, transform .15s;
+  text-decoration: none;
+}
+#landing-page .lnav-cta:hover { background: #0fa898; transform: translateY(-1px); }
+
+/* HERO */
+#landing-page .hero {
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center;
+  padding: 120px 24px 100px;
+  position: relative; overflow: hidden;
+}
+#landing-page .hero-bg {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 70% 50% at 50% 0%, rgba(25,196,178,0.15) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 40% at 90% 100%, rgba(27,46,107,0.3) 0%, transparent 70%),
+    #0a1628;
+  z-index: 0;
+}
+.blob { position:absolute; border-radius:50%; filter:blur(70px); opacity:.2; animation:lbFloat 8s ease-in-out infinite; z-index:0; }
+.blob-1 { width:500px;height:500px;background:#19C4B2;top:-150px;right:-100px;animation-delay:0s; }
+.blob-2 { width:350px;height:350px;background:#1B2E6B;bottom:-50px;left:-80px;animation-delay:3s; }
+.blob-3 { width:250px;height:250px;background:#19C4B2;bottom:80px;right:8%;animation-delay:5s; }
+@keyframes lbFloat { 0%,100%{transform:translateY(0) scale(1)} 50%{transform:translateY(-28px) scale(1.04)} }
+
+#landing-page .hero-content { position:relative; z-index:1; max-width:820px; width:100%; display:flex; flex-direction:column; align-items:center; text-align:center; margin:0 auto; }
+#landing-page .hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(25,196,178,0.12);
+  border: 1px solid rgba(25,196,178,0.25);
+  color: #19C4B2;
+  font-size: 13px; font-weight: 700;
+  padding: 6px 18px; border-radius: 100px;
+  margin-bottom: 28px; letter-spacing: .3px;
+  animation: lfadeUp .6s ease both;
+}
+#landing-page .hero-badge::before { content:'●'; font-size:8px; }
+
+#landing-page .hero-logo {
+  width: 110px; height: 120px;
+  margin: 0 auto 28px;
+  animation: lfadeUp .7s ease .1s both, llogoFloat 4s ease-in-out 1s infinite;
+  filter: drop-shadow(0 16px 48px rgba(25,196,178,0.4));
+}
+@keyframes llogoFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-14px)} }
+
+#landing-page .hero-title {
+  font-size: clamp(40px, 6.5vw, 76px);
+  font-weight: 900; line-height: 1.06;
+  letter-spacing: -2px; color: #fff;
+  margin-bottom: 20px;
+  animation: lfadeUp .7s ease .15s both;
+}
+#landing-page .hero-title .accent { color: #19C4B2; }
+
+#landing-page .hero-sub {
+  font-size: clamp(15px, 2vw, 18px);
+  font-weight: 400; color: rgba(232,234,246,0.65);
+  line-height: 1.7; max-width: 580px;
+  margin: 0 auto 44px;
+  animation: lfadeUp .7s ease .25s both;
+}
+
+#landing-page .hero-actions {
+  display: flex; align-items: center; justify-content: center;
+  gap: 14px; flex-wrap: wrap;
+  animation: lfadeUp .7s ease .35s both;
+}
+#landing-page .btn-primary {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: #19C4B2; color: #fff;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 15px; font-weight: 700;
+  padding: 14px 32px; border-radius: 100px;
+  text-decoration: none; border: none; cursor: pointer;
+  transition: background .2s, transform .15s, box-shadow .2s;
+  box-shadow: 0 8px 32px rgba(25,196,178,0.4);
+}
+#landing-page .btn-primary:hover { background:#0fa898; transform:translateY(-2px); box-shadow:0 12px 40px rgba(25,196,178,0.5); }
+#landing-page .btn-outline {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: transparent; color: rgba(255,255,255,0.8);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 15px; font-weight: 700;
+  padding: 14px 32px; border-radius: 100px;
+  text-decoration: none;
+  border: 1.5px solid rgba(255,255,255,0.15);
+  transition: border-color .2s, transform .15s;
+}
+#landing-page .btn-outline:hover { border-color:rgba(255,255,255,0.4); transform:translateY(-2px); }
+
+/* STATS BAR */
+#landing-page .stats-bar {
+  display: flex; justify-content: center;
+  background: #0f1e45; border-top: 1px solid rgba(25,196,178,0.1);
+}
+#landing-page .stat-item {
+  flex: 1; max-width: 220px; text-align: center;
+  padding: 30px 24px;
+  border-right: 1px solid rgba(255,255,255,0.06);
+}
+#landing-page .stat-item:last-child { border-right: none; }
+#landing-page .snum { font-size: 32px; font-weight: 900; color: #19C4B2; letter-spacing: -1px; }
+#landing-page .slabel { font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.4); margin-top: 4px; text-transform: uppercase; letter-spacing: .5px; }
+
+/* FITUR SECTION */
+#landing-page .section {
+  padding: 90px 24px;
+  background: #0d1525;
+}
+#landing-page .lcontainer { max-width: 1060px; margin: 0 auto; }
+#landing-page .section-label {
+  font-size: 12px; font-weight: 700; letter-spacing: 1.5px;
+  text-transform: uppercase; color: #19C4B2; margin-bottom: 12px;
+}
+#landing-page .section-title {
+  font-size: clamp(26px, 3.5vw, 40px);
+  font-weight: 900; letter-spacing: -1px; color: #fff;
+  line-height: 1.15; margin-bottom: 14px;
+}
+#landing-page .section-sub {
+  font-size: 15px; color: rgba(232,234,246,0.55); line-height: 1.7; max-width: 500px;
+}
+#landing-page .features-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+  gap: 18px; margin-top: 52px;
+}
+#landing-page .fcard {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 18px; padding: 28px;
+  transition: transform .25s, border-color .25s, background .25s;
+  position: relative; overflow: hidden;
+}
+#landing-page .fcard::before {
+  content:''; position:absolute; top:0;left:0;right:0;height:2px;
+  background: linear-gradient(90deg, #19C4B2, transparent);
+  transform: scaleX(0); transform-origin: left; transition: transform .3s;
+}
+#landing-page .fcard:hover { transform:translateY(-5px); border-color:rgba(25,196,178,0.25); background:rgba(25,196,178,0.04); }
+#landing-page .fcard:hover::before { transform:scaleX(1); }
+#landing-page .ficon {
+  width: 48px; height: 48px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; margin-bottom: 18px;
+  background: rgba(25,196,178,0.1);
+}
+#landing-page .ftitle { font-size: 17px; font-weight: 800; color: #fff; margin-bottom: 8px; }
+#landing-page .fdesc { font-size: 13px; color: rgba(232,234,246,0.5); line-height: 1.7; }
+
+/* CARA KERJA */
+#landing-page .how-section { padding: 90px 24px; background: #0a1628; }
+#landing-page .steps {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr));
+  gap: 28px; margin-top: 52px;
+}
+#landing-page .step { text-align: center; padding: 0 12px; }
+#landing-page .step-num {
+  width: 52px; height: 52px; background: #19C4B2; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; font-weight: 900; color: #fff;
+  margin: 0 auto 18px;
+  box-shadow: 0 8px 24px rgba(25,196,178,0.35);
+}
+#landing-page .step-title { font-size: 15px; font-weight: 800; color: #fff; margin-bottom: 8px; }
+#landing-page .step-desc { font-size: 13px; color: rgba(232,234,246,0.45); line-height: 1.65; }
+
+/* CTA */
+#landing-page .cta-section {
+  padding: 90px 24px; text-align: center;
+  background: linear-gradient(135deg, #0d1f3c 0%, #0a1628 100%);
+  position: relative; overflow: hidden;
+}
+#landing-page .cta-section::before {
+  content:''; position:absolute;
+  width:700px;height:700px;
+  background: radial-gradient(circle, rgba(25,196,178,0.1) 0%, transparent 65%);
+  top:50%;left:50%;transform:translate(-50%,-50%);
+}
+#landing-page .cta-inner { position:relative;z-index:1; }
+#landing-page .cta-logo { width:72px;height:78px;margin:0 auto 24px;filter:drop-shadow(0 8px 24px rgba(25,196,178,0.35)); }
+#landing-page .cta-title { font-size:clamp(26px,3.5vw,44px);font-weight:900;letter-spacing:-1px;color:#fff;margin-bottom:14px; }
+#landing-page .cta-sub { font-size:15px;color:rgba(232,234,246,0.55);margin-bottom:36px;max-width:420px;margin-left:auto;margin-right:auto;line-height:1.7; }
+
+/* DIVIDER */
+#landing-page .divider {
+  display: flex; align-items: center; gap: 20px;
+  padding: 0 48px; background: #0d1525;
+}
+#landing-page .divider-line { flex:1; height:1px; background: rgba(255,255,255,0.06); }
+#landing-page .divider-text {
+  font-size: 12px; font-weight: 700; letter-spacing: 1.5px;
+  text-transform: uppercase; color: rgba(255,255,255,0.2); padding: 16px 0;
+}
+
+/* SCROLL HINT */
+#landing-page .scroll-hint {
+  position:absolute; bottom:28px; left:50%; transform:translateX(-50%);
+  display:flex; flex-direction:column; align-items:center; gap:6px;
+  color:rgba(255,255,255,0.25); font-size:11px; font-weight:600;
+  letter-spacing:.8px; text-transform:uppercase; z-index:1;
+  animation: lfadeIn 1s ease 1s both;
+}
+.scroll-dot { width:26px;height:42px;border:1.5px solid rgba(255,255,255,0.1);border-radius:100px;position:relative;overflow:hidden; }
+.scroll-dot::after { content:'';position:absolute;top:6px;left:50%;transform:translateX(-50%);width:3px;height:7px;background:#19C4B2;border-radius:100px;animation:scrollAnim 1.8s ease infinite; }
+@keyframes scrollAnim { 0%{top:6px;opacity:1} 80%{top:24px;opacity:0} 100%{top:6px;opacity:0} }
+
+@keyframes lfadeUp { from{opacity:0;transform:translateY(22px)} to{opacity:1;transform:translateY(0)} }
+@keyframes lfadeIn { from{opacity:0} to{opacity:1} }
+.lreveal { opacity:0; transform:translateY(28px); transition:opacity .65s ease, transform .65s ease; }
+.lreveal.lvisible { opacity:1; transform:translateY(0); }
+
+/* ── DASHBOARD SECTION ── */
+#dashboard-page {
+  display: none;
+}
+#dashboard-page.active {
+  display: block;
+}
+
+/* scroll-to anchor */
+#dashboard-anchor { display: block; }
+
+@media(max-width:768px){
+  #landing-page .lnav { padding:14px 20px; }
+  #landing-page .stats-bar { flex-wrap:wrap; }
+  #landing-page .stat-item { max-width:50%;flex:0 0 50%; }
+  #landing-page .divider { padding:0 20px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════
+     LANDING PAGE
+══════════════════════════════════ -->
+<div id="landing-page">
+
+  <!-- Navbar Landing -->
+  <nav class="lnav" id="lnav">
+    <a class="lnav-logo" href="#">
+      <img src="logo.svg" alt="Pinzup Logo">
+      <span class="lnav-logo-text">Pin<span>zup</span></span>
+    </a>
+    <button class="lnav-cta" onclick="masukDashboard()">Buka Aplikasi →</button>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+
+    <div class="hero-content">
+      <div class="hero-badge">Sistem Informasi Berbasis Web</div>
+      <img src="logo.svg" alt="Pinzup" class="hero-logo">
+      <h1 class="hero-title">
+        Kelola Peminjaman<br>Barang dengan <span class="accent">Cerdas</span>
+      </h1>
+      <p class="hero-sub">
+        Pinzup adalah sistem informasi peminjaman barang berbasis web yang dirancang untuk mempermudah pengelolaan inventaris, pencatatan peminjaman, dan pengingat pengembalian secara efisien.
+      </p>
+      <div class="hero-actions">
+        <button class="btn-primary" onclick="masukDashboard()">🚀 Mulai Sekarang</button>
+        <a class="btn-outline" href="#fitur-section">Lihat Fitur ↓</a>
+      </div>
+    </div>
+
+    <div class="scroll-hint">
+      <div class="scroll-dot"></div>
+      Scroll
+    </div>
+  </section>
+
+  <!-- Stats Bar -->
+  <div class="stats-bar">
+    <div class="stat-item"><div class="snum">100%</div><div class="slabel">Berbasis Web</div></div>
+    <div class="stat-item"><div class="snum">Real-time</div><div class="slabel">Status Peminjaman</div></div>
+    <div class="stat-item"><div class="snum">⚡ Cepat</div><div class="slabel">& Ringan</div></div>
+    <div class="stat-item"><div class="snum">🔔</div><div class="slabel">Notifikasi Terlambat</div></div>
+  </div>
+
+  <!-- Fitur -->
+  <section class="section" id="fitur-section">
+    <div class="lcontainer">
+      <div class="lreveal">
+        <div class="section-label">Fitur Unggulan</div>
+        <h2 class="section-title">Semua yang kamu butuhkan<br>dalam satu platform</h2>
+        <p class="section-sub">Dirancang khusus untuk pengelolaan inventaris dan peminjaman barang yang terstruktur, transparan, dan mudah digunakan.</p>
+      </div>
+      <div class="features-grid">
+        <div class="fcard lreveal"><div class="ficon">📦</div><div class="ftitle">Manajemen Inventaris</div><div class="fdesc">Tambah, edit, dan kelola daftar barang secara lengkap dengan kategori, kode otomatis, status kondisi, dan foto barang.</div></div>
+        <div class="fcard lreveal"><div class="ficon">📋</div><div class="ftitle">Pencatatan Peminjaman</div><div class="fdesc">Catat setiap transaksi peminjaman dengan data peminjam, tanggal pinjam, dan batas waktu pengembalian yang jelas.</div></div>
+        <div class="fcard lreveal"><div class="ficon">⚠️</div><div class="ftitle">Notifikasi Keterlambatan</div><div class="fdesc">Sistem otomatis mendeteksi dan menampilkan peringatan untuk barang yang belum dikembalikan melewati batas waktu.</div></div>
+        <div class="fcard lreveal"><div class="ficon">📊</div><div class="ftitle">Dashboard & Laporan</div><div class="fdesc">Pantau kondisi inventaris melalui grafik distribusi dan statistik real-time langsung dari halaman utama.</div></div>
+        <div class="fcard lreveal"><div class="ficon">📜</div><div class="ftitle">Riwayat Aktivitas</div><div class="fdesc">Semua transaksi tercatat otomatis — dari penambahan barang hingga pengembalian pinjaman.</div></div>
+        <div class="fcard lreveal"><div class="ficon">💾</div><div class="ftitle">Export Data CSV</div><div class="fdesc">Unduh data inventaris dan peminjaman dalam format CSV untuk kebutuhan pelaporan atau dokumentasi.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Cara Kerja -->
+  <section class="how-section">
+    <div class="lcontainer">
+      <div class="lreveal">
+        <div class="section-label">Cara Kerja</div>
+        <h2 class="section-title">Mudah digunakan,<br>langsung terasa manfaatnya</h2>
+        <p class="section-sub">Cukup 4 langkah untuk mulai mengelola inventaris dan peminjaman barangmu.</p>
+      </div>
+      <div class="steps">
+        <div class="step lreveal"><div class="step-num">1</div><div class="step-title">Tambah Barang</div><div class="step-desc">Masukkan data barang ke inventaris lengkap dengan kategori, kondisi, dan foto.</div></div>
+        <div class="step lreveal"><div class="step-num">2</div><div class="step-title">Catat Peminjaman</div><div class="step-desc">Pilih barang, isi data peminjam, dan tentukan batas waktu pengembalian.</div></div>
+        <div class="step lreveal"><div class="step-num">3</div><div class="step-title">Pantau Status</div><div class="step-desc">Dashboard menampilkan status real-time semua barang dan peminjaman aktif.</div></div>
+        <div class="step lreveal"><div class="step-num">4</div><div class="step-title">Terima Pengembalian</div><div class="step-desc">Konfirmasi pengembalian barang dan riwayat tersimpan otomatis.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="cta-inner">
+      <img src="logo.svg" alt="Pinzup" class="cta-logo">
+      <h2 class="cta-title">Siap mengelola inventaris<br>dengan lebih mudah?</h2>
+      <p class="cta-sub">Mulai gunakan Pinzup sekarang — cepat, ringan, dan langsung bisa dipakai tanpa instalasi tambahan.</p>
+      <button class="btn-primary" style="font-size:16px;padding:16px 40px;" onclick="masukDashboard()">🚀 Buka Dashboard Pinzup</button>
+    </div>
+  </section>
+
+</div><!-- end #landing-page -->
+
+
+<!-- ══════════════════════════════════
+     DASHBOARD PAGE
+══════════════════════════════════ -->
+<div id="dashboard-page">
+
+<nav class="navbar">
+  <a href="#" class="nav-brand" onclick="kembaliLanding(); return false;">
+    <img src="logo.svg" style="width:36px;height:40px;filter:drop-shadow(0 4px 8px rgba(25,196,178,0.4))">
+    <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:800;letter-spacing:-0.5px;color:var(--text)">Pin<span style="color:#19C4B2">zup</span></span>
+  </a>
+  <div class="nav-links">
+    <a href="#"             class="nav-link active" onclick="kembaliLanding(); return false;"><span class="icon">🏠</span><span>Beranda</span></a>
+    <a href="#"             class="nav-link" onclick="return false;"><span class="icon">⊞</span><span>Dashboard</span></a>
+    <a class='nav-link' href='/inventaris'><span class="icon">📦</span><span>Inventaris</span></a>
+    <a class='nav-link' href='/peminjaman'><span class="icon">📋</span><span>Peminjaman</span></a>
+    <a class='nav-link' href='/riwayat'><span class="icon">📜</span><span>Riwayat</span></a>
+  </div>
+  <div class="nav-right">
+    <div id="clock">--:--</div>
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle tema">☀️</button>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Dashboard</h1>
+      <p class="page-sub">Ringkasan kondisi inventaris & peminjaman hari ini.</p>
+    </div>
+    <div class="page-header-actions">
+      <div class="date-badge" id="dateBadge">—</div>
+    </div>
+  </div>
+
+  <!-- ALERT TERLAMBAT -->
+  <div class="alert alert-danger" id="alertTerlambat" style="display:none">
+    <span class="alert-icon">⚠️</span>
+    <div class="alert-text">
+      <strong>Perhatian!</strong> Ada <span id="alertJml">0</span> barang yang belum dikembalikan melewati batas waktu.
+    </div>
+    <a class='alert-link' href='/peminjaman'>Lihat Detail →</a>
+  </div>
+
+  <!-- STATS CARDS -->
+  <div class="stats-grid" id="statsGrid">
+    <div class="stat-card stat-blue fade-in" style="animation-delay:.05s">
+      <div class="stat-card-accent"></div>
+      <div class="stat-icon-wrap">📦</div>
+      <div class="stat-num" id="sTotal">0</div>
+      <div class="stat-label">Total Barang</div>
+    </div>
+    <div class="stat-card stat-green fade-in" style="animation-delay:.1s">
+      <div class="stat-card-accent"></div>
+      <div class="stat-icon-wrap">✅</div>
+      <div class="stat-num" id="sReady">0</div>
+      <div class="stat-label">Tersedia / Ready</div>
+    </div>
+    <div class="stat-card stat-orange fade-in" style="animation-delay:.15s">
+      <div class="stat-card-accent"></div>
+      <div class="stat-icon-wrap">🔄</div>
+      <div class="stat-num" id="sDipinjam">0</div>
+      <div class="stat-label">Sedang Dipinjam</div>
+    </div>
+    <div class="stat-card stat-red fade-in" style="animation-delay:.2s">
+      <div class="stat-card-accent"></div>
+      <div class="stat-icon-wrap">⏰</div>
+      <div class="stat-num" id="sTerlambat">0</div>
+      <div class="stat-label">Terlambat Kembali</div>
+    </div>
+    <div class="stat-card stat-gray fade-in" style="animation-delay:.25s">
+      <div class="stat-card-accent"></div>
+      <div class="stat-icon-wrap">🔧</div>
+      <div class="stat-num" id="sNonReady">0</div>
+      <div class="stat-label">Non-Ready / Rusak</div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="card fade-in" style="animation-delay:.3s">
+      <div class="card-header">
+        <h2 class="card-title">🔄 Peminjaman Aktif</h2>
+        <a class='btn-link' href='/peminjaman'>Lihat semua →</a>
+      </div>
+      <div id="listAktif">
+        <div class="empty-state"><span class="empty-icon">🎉</span><p>Tidak ada peminjaman aktif</p></div>
+      </div>
+    </div>
+    <div class="card fade-in" style="animation-delay:.35s">
+      <div class="card-header">
+        <h2 class="card-title">📦 Inventaris Terbaru</h2>
+        <a class='btn-link' href='/inventaris'>Kelola →</a>
+      </div>
+      <div id="listInventaris">
+        <div class="empty-state"><span class="empty-icon">📭</span><p>Belum ada barang</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="two-col fade-in" style="animation-delay:.4s">
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">📊 Distribusi Barang</h2></div>
+      <div class="card-body">
+        <div id="chartArea" style="position:relative;height:130px;margin-bottom:16px">
+          <canvas id="donutChart" width="130" height="130" style="position:absolute;left:0;top:0"></canvas>
+          <div id="donutCenter" style="position:absolute;left:0;top:0;width:130px;height:130px;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none">
+            <div style="font-size:22px;font-weight:700;color:var(--text)" id="donutNum">0</div>
+            <div style="font-size:11px;color:var(--text-2);font-weight:600">Total</div>
+          </div>
+        </div>
+        <div id="chartLegend" style="display:flex;flex-direction:column;gap:8px"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">📜 Aktivitas Terbaru</h2>
+        <a class='btn-link' href='/riwayat'>Semua →</a>
+      </div>
+      <div id="listRiwayat">
+        <div class="empty-state"><span class="empty-icon">📜</span><p>Belum ada aktivitas</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card fade-in" style="animation-delay:.45s">
+    <div class="card-header"><h2 class="card-title">⚡ Aksi Cepat</h2></div>
+    <div class="quick-actions">
+      <a class='qa-btn qa-green' href='/inventaris'><div class="qa-icon">➕</div><span>Tambah Barang</span></a>
+      <a class='qa-btn qa-blue' href='/peminjaman'><div class="qa-icon">📋</div><span>Catat Peminjaman</span></a>
+      <a class='qa-btn qa-purple' href='/riwayat'><div class="qa-icon">📜</div><span>Lihat Riwayat</span></a>
+    </div>
+  </div>
+
+</div><!-- end .container -->
+</div><!-- end #dashboard-page -->
+
+
+<script src="data.js"></script>
+<script>
+/* ── AUTO BUKA DASHBOARD jika URL punya ?dashboard=1 ── */
+if (new URLSearchParams(window.location.search).get('dashboard') === '1') {
+  document.getElementById('landing-page').style.display = 'none';
+  document.getElementById('dashboard-page').classList.add('active');
+  // Jalankan setelah DOM siap
+  window.addEventListener('DOMContentLoaded', () => { startClock(); render(); });
+}
+
+/* ── NAVIGASI LANDING ↔ DASHBOARD ── */
+function masukDashboard() {
+  document.getElementById('landing-page').style.display = 'none';
+  const dash = document.getElementById('dashboard-page');
+  dash.classList.add('active');
+  window.scrollTo(0, 0);
+  startClock();
+  render();
+}
+
+function kembaliLanding() {
+  document.getElementById('dashboard-page').classList.remove('active');
+  document.getElementById('landing-page').style.display = 'block';
+  window.scrollTo(0, 0);
+}
+
+/* ── LANDING SCROLL REVEAL ── */
+const lObserver = new IntersectionObserver((entries) => {
+  entries.forEach((entry, i) => {
+    if (entry.isIntersecting) {
+      setTimeout(() => entry.target.classList.add('lvisible'), i * 80);
+      lObserver.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.1 });
+document.querySelectorAll('.lreveal').forEach(el => lObserver.observe(el));
+
+/* ── LANDING NAVBAR SCROLL ── */
+window.addEventListener('scroll', () => {
+  document.getElementById('lnav')?.classList.toggle('scrolled', window.scrollY > 20);
+});
+
+/* ── DASHBOARD FUNCTIONS ── */
+function drawDonut(ready, dipinjam, nonready) {
+  const canvas = document.getElementById('donutChart');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const total = ready + dipinjam + nonready;
+  const cx = 65, cy = 65, r = 50, thick = 18;
+  ctx.clearRect(0, 0, 130, 130);
+  if (total === 0) {
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--border-2').trim();
+    ctx.lineWidth = thick; ctx.stroke();
+    document.getElementById('donutNum').textContent = '0'; return;
+  }
+  document.getElementById('donutNum').textContent = total;
+  const slices = [
+    { val: ready,    color: '#22c55e' },
+    { val: dipinjam, color: '#f59e0b' },
+    { val: nonready, color: '#94a3b8' },
+  ].filter(s => s.val > 0);
+  let start = -Math.PI / 2;
+  slices.forEach(s => {
+    const angle = (s.val / total) * Math.PI * 2;
+    ctx.beginPath(); ctx.arc(cx, cy, r, start, start + angle);
+    ctx.strokeStyle = s.color; ctx.lineWidth = thick; ctx.lineCap = 'round'; ctx.stroke();
+    start += angle + 0.04;
+  });
+}
+
+function render() {
+  const inv  = getInventaris();
+  const pinj = getPeminjaman();
+  const riw  = getRiwayat();
+  const ready     = inv.filter(b => getBarangStatus(b) === 'ready').length;
+  const dipinjam  = inv.filter(b => getBarangStatus(b) === 'dipinjam').length;
+  const nonready  = inv.filter(b => getBarangStatus(b) === 'nonready').length;
+  const terlambat = pinj.filter(p => getStatusPinjam(p) === 'terlambat').length;
+  const aktifList = pinj.filter(p => getStatusPinjam(p) === 'aktif');
+
+  document.getElementById('sTotal').textContent     = inv.length;
+  document.getElementById('sReady').textContent     = ready;
+  document.getElementById('sDipinjam').textContent  = dipinjam;
+  document.getElementById('sNonReady').textContent  = nonready;
+  document.getElementById('sTerlambat').textContent = terlambat;
+
+  if (terlambat > 0) {
+    document.getElementById('alertTerlambat').style.display = 'flex';
+    document.getElementById('alertJml').textContent = terlambat;
+  }
+
+  drawDonut(ready, dipinjam, nonready);
+
+  document.getElementById('chartLegend').innerHTML = [
+    { color: '#22c55e', label: 'Ready / Tersedia', val: ready },
+    { color: '#f59e0b', label: 'Sedang Dipinjam',  val: dipinjam },
+    { color: '#94a3b8', label: 'Non-Ready / Rusak', val: nonready },
+  ].map(s => `
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="width:10px;height:10px;border-radius:50%;background:${s.color};flex-shrink:0"></div>
+      <div style="flex:1;font-size:13px;color:var(--text-2)">${s.label}</div>
+      <div style="font-size:13px;font-weight:700;color:var(--text)">${s.val}</div>
+      <div style="font-size:11px;color:var(--text-3);width:36px;text-align:right">${inv.length ? Math.round(s.val/inv.length*100) : 0}%</div>
+    </div>
+  `).join('');
+
+  const la = document.getElementById('listAktif');
+  if (!aktifList.length) {
+    la.innerHTML = `<div class="empty-state"><span class="empty-icon">🎉</span><p>Tidak ada peminjaman aktif</p></div>`;
+  } else {
+    la.innerHTML = aktifList.slice(0, 5).map(p => {
+      const b = inv.find(x => x.id === p.barangId);
+      const sisa = getSisaHari(p.tglKembali);
+      const isLate = sisa < 0;
+      return `<div class="list-item">
+        <div class="list-thumb">${b && b.img ? `<img src="${b.img}">` : (b ? getEmoji(b.kat) : '📦')}</div>
+        <div class="list-info">
+          <div class="list-name">${p.nama}</div>
+          <div class="list-sub">${b ? b.nama : '—'} · ${isLate ? `<span class="text-red">Terlambat ${Math.abs(sisa)} hari</span>` : `${sisa} hari lagi`}</div>
+        </div>
+        <span class="pill ${isLate ? 'pill-red' : 'pill-orange'}">${isLate ? 'Terlambat' : 'Aktif'}</span>
+      </div>`;
+    }).join('');
+  }
+
+  const li = document.getElementById('listInventaris');
+  if (!inv.length) {
+    li.innerHTML = `<div class="empty-state"><span class="empty-icon">📭</span><p>Belum ada barang</p></div>`;
+  } else {
+    li.innerHTML = inv.slice(0, 5).map(b => {
+      const st = getBarangStatus(b);
+      const pillClass = st === 'ready' ? 'pill-green' : st === 'dipinjam' ? 'pill-orange' : 'pill-gray';
+      const pillLabel = st === 'ready' ? 'Ready' : st === 'dipinjam' ? 'Dipinjam' : 'Non-Ready';
+      return `<div class="list-item">
+        <div class="list-thumb">${b.img ? `<img src="${b.img}">` : getEmoji(b.kat)}</div>
+        <div class="list-info">
+          <div class="list-name">${b.nama}</div>
+          <div class="list-sub">${b.kat}</div>
+        </div>
+        <span class="pill ${pillClass}">${pillLabel}</span>
+      </div>`;
+    }).join('');
+  }
+
+  const lr = document.getElementById('listRiwayat');
+  if (!riw.length) {
+    lr.innerHTML = `<div class="empty-state"><span class="empty-icon">📜</span><p>Belum ada aktivitas</p></div>`;
+  } else {
+    const icons  = { pinjam:'📋', kembali:'✅', tambah:'📦' };
+    const colors = { pinjam:'rgba(108,99,255,0.15)', kembali:'rgba(34,197,94,0.15)', tambah:'rgba(236,72,153,0.15)' };
+    lr.innerHTML = riw.slice(0, 5).map(r => `
+      <div class="riwayat-item">
+        <div class="riwayat-icon" style="background:${colors[r.tipe] || 'var(--bg-4)'}">${icons[r.tipe] || 'ℹ️'}</div>
+        <div class="riwayat-info">
+          <div class="riwayat-text">${r.teks}</div>
+          <div class="riwayat-time">${fmtDateTime(r.waktu)}</div>
+        </div>
+      </div>`).join('');
+  }
+}
+</script>
+</body>
+</html>

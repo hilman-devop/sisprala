@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pinzup — Inventaris</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav class="navbar">
+  <a class='nav-brand' href='/?dashboard=1'>
+    <img src="logo.svg" style="width:36px;height:40px;filter:drop-shadow(0 4px 8px rgba(25,196,178,0.4))">
+    <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:800;letter-spacing:-0.5px">Pin<span style="color:#19C4B2">zup</span></span>
+  </a>
+  <div class="nav-links">
+    <a class='nav-link' href='/'><span class="icon">🏠</span><span>Beranda</span></a>
+    <a class='nav-link' href='/?dashboard=1'><span class="icon">⊞</span><span>Dashboard</span></a>
+    <a class='nav-link active' href='/inventaris'><span class="icon">📦</span><span>Inventaris</span></a>
+    <a class='nav-link' href='/peminjaman'><span class="icon">📋</span><span>Peminjaman</span></a>
+    <a class='nav-link' href='/riwayat'><span class="icon">📜</span><span>Riwayat</span></a>
+  </div>
+  <div class="nav-right">
+    <div id="clock">--:--</div>
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle tema">☀️</button>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Inventaris Barang</h1>
+      <p class="page-sub">Kelola semua barang yang tersedia di <span class="org-name">Pinzup</span>.</p>
+    </div>
+    <div class="page-header-actions">
+      <button class="btn btn-outline btn-sm" onclick="exportCSV('inventaris')">⬇ Export CSV</button>
+      <button class="btn btn-primary" onclick="openModal('modalTambah')">+ Tambah Barang</button>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-grid" style="grid-template-columns:repeat(4,1fr)">
+    <div class="stat-card stat-blue">
+      <div class="stat-card-accent"></div>
+      <div class="stat-icon-wrap">📦</div>
+      <div class="stat-num" id="sTotal">0</div>
+      <div class="stat-label">Total Barang</div>
+    </div>
+    <div class="stat-card stat-green">
+      <div class="stat-card-accent"></div>
+      <div class="stat-icon-wrap">✅</div>
+      <div class="stat-num" id="sReady">0</div>
+      <div class="stat-label">Ready</div>
+    </div>
+    <div class="stat-card stat-orange">
+      <div class="stat-card-accent"></div>
+      <div class="stat-icon-wrap">🔄</div>
+      <div class="stat-num" id="sDipinjam">0</div>
+      <div class="stat-label">Dipinjam</div>
+    </div>
+    <div class="stat-card stat-gray">
+      <div class="stat-card-accent"></div>
+      <div class="stat-icon-wrap">🔧</div>
+      <div class="stat-num" id="sNonReady">0</div>
+      <div class="stat-label">Non-Ready</div>
+    </div>
+  </div>
+
+  <!-- FILTER & SEARCH -->
+  <div class="filter-bar">
+    <div class="search-box" style="max-width:280px">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchInp" placeholder="Cari barang…" oninput="render()">
+    </div>
+    <select id="katFilter" class="filter-btn" style="padding:7px 14px;border-radius:8px" onchange="render()">
+      <option value="">Semua Kategori</option>
+      <option>📷 Kamera</option>
+      <option>🎙️ Audio</option>
+      <option>💡 Lighting</option>
+      <option>🖥️ Komputer</option>
+      <option>🔧 Peralatan</option>
+      <option>📚 Buku</option>
+      <option>✏️ Alat Tulis</option>
+      <option>📦 Lainnya</option>
+    </select>
+    <button class="filter-btn active" onclick="setFilter('semua',this)">Semua</button>
+    <button class="filter-btn" onclick="setFilter('ready',this)">✅ Ready</button>
+    <button class="filter-btn" onclick="setFilter('dipinjam',this)">🔄 Dipinjam</button>
+    <button class="filter-btn" onclick="setFilter('nonready',this)">🔧 Non-Ready</button>
+    <button class="btn btn-ghost btn-sm" id="viewToggle" onclick="toggleView()" title="Ubah tampilan" style="margin-left:auto">⊟ List</button>
+  </div>
+
+  <!-- GRID / LIST -->
+  <div id="invGrid" class="inv-grid"></div>
+  <div id="invList" style="display:none">
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Foto</th>
+              <th>Nama Barang</th>
+              <th>Kategori</th>
+              <th>Keterangan</th>
+              <th>Status</th>
+              <th>Peminjam</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="invTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL: TAMBAH BARANG -->
+<div class="modal-bg" id="modalTambah">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">➕ Tambah Barang Baru</span>
+      <button class="modal-close" onclick="closeModal('modalTambah')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid" style="grid-template-columns:1fr 1fr">
+        <div class="form-group">
+          <label>Nama Barang *</label>
+          <input type="text" id="tNama" placeholder="cth. Kamera Canon EOS R50">
+        </div>
+        <div class="form-group">
+          <label>Kategori</label>
+          <select id="tKat">
+            <option value="📷 Kamera">📷 Kamera</option>
+            <option value="🎙️ Audio">🎙️ Audio</option>
+            <option value="💡 Lighting">💡 Lighting</option>
+            <option value="🖥️ Komputer">🖥️ Komputer</option>
+            <option value="🔧 Peralatan">🔧 Peralatan</option>
+            <option value="📚 Buku">📚 Buku</option>
+            <option value="✏️ Alat Tulis">✏️ Alat Tulis</option>
+            <option value="📦 Lainnya">📦 Lainnya</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Status Awal</label>
+          <select id="tStatus">
+            <option value="ready">✅ Ready — Tersedia</option>
+            <option value="nonready">🔧 Non-Ready — Rusak/Servis</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Keterangan</label>
+          <input type="text" id="tKet" placeholder="cth. Termasuk charger, tas">
+        </div>
+        <div class="form-group full">
+          <label>Foto Barang</label>
+          <div class="img-upload-wrap" id="tImgWrap" onclick="document.getElementById('tImgFile').click()">
+            <input type="file" id="tImgFile" accept="image/*" onchange="previewImg(this,'tImgPrev','tImgWrap')">
+            <img class="img-preview" id="tImgPrev" alt="">
+            <div class="upload-icon">📸</div>
+            <div class="upload-label">Klik untuk upload foto (maks 2MB)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modalTambah')">Batal</button>
+      <button class="btn btn-primary" onclick="tambahBarang()">Simpan Barang</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: EDIT BARANG -->
+<div class="modal-bg" id="modalEdit">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">✏️ Edit Barang</span>
+      <button class="modal-close" onclick="closeModal('modalEdit')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="eId">
+      <div class="form-grid" style="grid-template-columns:1fr 1fr">
+        <div class="form-group">
+          <label>Nama Barang *</label>
+          <input type="text" id="eNama">
+        </div>
+        <div class="form-group">
+          <label>Kategori</label>
+          <select id="eKat">
+            <option value="📷 Kamera">📷 Kamera</option>
+            <option value="🎙️ Audio">🎙️ Audio</option>
+            <option value="💡 Lighting">💡 Lighting</option>
+            <option value="🖥️ Komputer">🖥️ Komputer</option>
+            <option value="🔧 Peralatan">🔧 Peralatan</option>
+            <option value="📚 Buku">📚 Buku</option>
+            <option value="✏️ Alat Tulis">✏️ Alat Tulis</option>
+            <option value="📦 Lainnya">📦 Lainnya</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select id="eStatus">
+            <option value="ready">✅ Ready</option>
+            <option value="nonready">🔧 Non-Ready</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Keterangan</label>
+          <input type="text" id="eKet">
+        </div>
+        <div class="form-group full">
+          <label>Ganti Foto</label>
+          <div class="img-upload-wrap" id="eImgWrap" onclick="document.getElementById('eImgFile').click()">
+            <input type="file" id="eImgFile" accept="image/*" onchange="previewImg(this,'eImgPrev','eImgWrap')">
+            <img class="img-preview" id="eImgPrev" alt="">
+            <div class="upload-icon">📸</div>
+            <div class="upload-label">Klik untuk ganti foto</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modalEdit')">Batal</button>
+      <button class="btn btn-primary" onclick="simpanEdit()">Simpan Perubahan</button>
+    </div>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script>
+  let filterMode = 'semua';
+  let viewMode   = 'grid'; // 'grid' | 'list'
+
+  startClock();
+
+  function setFilter(mode, btn) {
+    filterMode = mode;
+    document.querySelectorAll('.filter-btn').forEach(b => {
+      if (b.tagName === 'BUTTON') b.classList.remove('active');
+    });
+    btn.classList.add('active');
+    render();
+  }
+
+  function toggleView() {
+    viewMode = viewMode === 'grid' ? 'list' : 'grid';
+    document.getElementById('viewToggle').textContent = viewMode === 'grid' ? '⊟ List' : '⊞ Grid';
+    document.getElementById('invGrid').style.display = viewMode === 'grid' ? '' : 'none';
+    document.getElementById('invList').style.display = viewMode === 'list' ? '' : 'none';
+    render();
+  }
+
+  function render() {
+    const inv = getInventaris();
+    const q   = (document.getElementById('searchInp').value || '').toLowerCase();
+    const kat = document.getElementById('katFilter').value;
+
+    document.getElementById('sTotal').textContent    = inv.length;
+    document.getElementById('sReady').textContent    = inv.filter(b => getBarangStatus(b) === 'ready').length;
+    document.getElementById('sDipinjam').textContent = inv.filter(b => getBarangStatus(b) === 'dipinjam').length;
+    document.getElementById('sNonReady').textContent = inv.filter(b => getBarangStatus(b) === 'nonready').length;
+
+    let list = inv;
+    if (filterMode !== 'semua') list = list.filter(b => getBarangStatus(b) === filterMode);
+    if (q)   list = list.filter(b => b.nama.toLowerCase().includes(q) || (b.ket || '').toLowerCase().includes(q));
+    if (kat) list = list.filter(b => b.kat === kat);
+
+    if (viewMode === 'grid') renderGrid(list, inv);
+    else renderList(list, inv);
+  }
+
+  function renderGrid(list, inv) {
+    const grid = document.getElementById('invGrid');
+    if (!list.length) {
+      grid.innerHTML = `<div style="grid-column:1/-1"><div class="empty-state"><span class="empty-icon">🔍</span><p>Tidak ada barang ditemukan</p><p class="empty-sub">Coba ubah filter atau kata kunci pencarian</p></div></div>`;
+      return;
+    }
+    grid.innerHTML = list.map(b => {
+      const st = getBarangStatus(b);
+      const pillClass = st === 'ready' ? 'pill-green' : st === 'dipinjam' ? 'pill-orange' : 'pill-gray';
+      const pillLabel = st === 'ready' ? '✅ Ready' : st === 'dipinjam' ? '🔄 Dipinjam' : '🔧 Non-Ready';
+      const imgHtml   = b.img ? `<img class="inv-img" src="${b.img}" alt="${b.nama}">` : `<div class="inv-img-ph">${getEmoji(b.kat)}</div>`;
+      const overlay   = st === 'dipinjam' ? `<div class="inv-overlay dipinjam">DIPINJAM</div>`
+                       : st === 'nonready' ? `<div class="inv-overlay nonready">NON-READY</div>` : '';
+      const pinj = getPeminjaman();
+      const loan = pinj.find(p => p.barangId === b.id && !p.selesai);
+      const loanInfo = loan ? `<div class="text-muted" style="margin-top:4px;font-size:11px">👤 ${loan.nama} · hingga ${fmtDateShort(loan.tglKembali)}</div>` : '';
+      const toggleLabel = st === 'ready' ? 'Set Non-Ready' : st === 'nonready' ? 'Set Ready' : null;
+
+      return `
+        <div class="inv-card fade-in">
+          <div class="inv-img-wrap">${imgHtml}${overlay}</div>
+          <div class="inv-body">
+            <div class="inv-name" title="${b.nama}">${b.nama}</div>
+            <div class="inv-meta">${b.kat}${b.ket ? ' · ' + b.ket.slice(0,28) + (b.ket.length>28?'…':'') : ''}</div>
+            <span class="pill ${pillClass}">${pillLabel}</span>
+            ${loanInfo}
+          </div>
+          <div class="inv-footer">
+            <button class="btn btn-outline btn-xs" onclick="bukaEdit(${b.id})">✏️</button>
+            ${toggleLabel ? `<button class="btn btn-outline btn-xs" onclick="toggleStatus(${b.id})" title="${toggleLabel}">🔄</button>` : ''}
+            <button class="btn btn-danger btn-xs" onclick="hapus(${b.id})" style="margin-left:auto">🗑️</button>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  function renderList(list, inv) {
+    const tbody = document.getElementById('invTableBody');
+    if (!list.length) {
+      tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><span class="empty-icon">🔍</span><p>Tidak ada barang</p></div></td></tr>`;
+      return;
+    }
+    tbody.innerHTML = list.map(b => {
+      const st = getBarangStatus(b);
+      const pillClass = st === 'ready' ? 'pill-green' : st === 'dipinjam' ? 'pill-orange' : 'pill-gray';
+      const pillLabel = st === 'ready' ? '✅ Ready' : st === 'dipinjam' ? '🔄 Dipinjam' : '🔧 Non-Ready';
+      const pinj = getPeminjaman();
+      const loan = pinj.find(p => p.barangId === b.id && !p.selesai);
+      const toggleLabel = st === 'ready' ? 'Set Non-Ready' : st === 'nonready' ? 'Set Ready' : null;
+
+      return `
+        <tr>
+          <td>${b.img ? `<img class="td-thumb" src="${b.img}">` : `<div class="td-thumb-ph">${getEmoji(b.kat)}</div>`}</td>
+          <td><div class="text-bold">${b.nama}</div></td>
+          <td><div class="text-muted">${b.kat}</div></td>
+          <td><div class="text-muted">${b.ket || '—'}</div></td>
+          <td><span class="pill ${pillClass}">${pillLabel}</span></td>
+          <td>${loan ? `<div class="text-bold" style="font-size:13px">${loan.nama}</div><div class="text-muted">Hingga ${fmtDateShort(loan.tglKembali)}</div>` : '<span style="color:var(--text-3)">—</span>'}</td>
+          <td>
+            <div style="display:flex;gap:6px">
+              <button class="btn btn-outline btn-xs" onclick="bukaEdit(${b.id})">✏️ Edit</button>
+              ${toggleLabel ? `<button class="btn btn-ghost btn-xs" onclick="toggleStatus(${b.id})">${toggleLabel}</button>` : ''}
+              <button class="btn btn-danger btn-xs" onclick="hapus(${b.id})">🗑️</button>
+            </div>
+          </td>
+        </tr>`;
+    }).join('');
+  }
+
+  function tambahBarang() {
+    const nama = document.getElementById('tNama').value.trim();
+    if (!nama) { showToast('Nama barang wajib diisi!', 'error'); return; }
+    const kat    = document.getElementById('tKat').value;
+    const status = document.getElementById('tStatus').value;
+    const ket    = document.getElementById('tKet').value.trim();
+    const img    = getImgData('tImgPrev');
+
+    const inv = getInventaris();
+    inv.unshift({ id: Date.now(), nama, kat, status, ket, img });
+    saveInventaris(inv);
+    addRiwayat('tambah', `Barang baru ditambahkan: ${nama}`);
+    closeModal('modalTambah');
+    document.getElementById('tNama').value = '';
+    document.getElementById('tKet').value  = '';
+    document.getElementById('tImgFile').value = '';
+    resetImgUpload('tImgPrev', 'tImgWrap');
+    render();
+    showToast(`"${nama}" berhasil ditambahkan!`, 'success');
+  }
+
+  function hapus(id) {
+    const b = getInventaris().find(x => x.id === id);
+    if (!b) return;
+    if (!confirm(`Yakin ingin menghapus "${b.nama}"?`)) return;
+    saveInventaris(getInventaris().filter(x => x.id !== id));
+    savePeminjaman(getPeminjaman().filter(p => p.barangId !== id));
+    render();
+    showToast('Barang berhasil dihapus.', 'success');
+  }
+
+  function toggleStatus(id) {
+    const inv = getInventaris();
+    const b   = inv.find(x => x.id === id);
+    if (!b) return;
+    if (getBarangStatus(b) === 'dipinjam') { showToast('Barang sedang dipinjam, tidak bisa diubah status!', 'warning'); return; }
+    b.status = b.status === 'ready' ? 'nonready' : 'ready';
+    saveInventaris(inv);
+    addRiwayat('tambah', `Status "${b.nama}" diubah ke ${b.status}`);
+    render();
+    showToast(`Status diubah ke ${b.status === 'ready' ? 'Ready' : 'Non-Ready'}`, 'success');
+  }
+
+  function bukaEdit(id) {
+    const inv = getInventaris();
+    const b   = inv.find(x => x.id === id);
+    if (!b) return;
+    document.getElementById('eId').value    = id;
+    document.getElementById('eNama').value  = b.nama;
+    document.getElementById('eKat').value   = b.kat;
+    document.getElementById('eKet').value   = b.ket || '';
+    document.getElementById('eStatus').value = b.status || 'ready';
+    document.getElementById('eStatus').disabled = getBarangStatus(b) === 'dipinjam';
+    setImgPreview('eImgPrev', 'eImgWrap', b.img || null);
+    document.getElementById('eImgFile').value = '';
+    openModal('modalEdit');
+  }
+
+  function simpanEdit() {
+    const id  = parseInt(document.getElementById('eId').value);
+    const inv = getInventaris();
+    const b   = inv.find(x => x.id === id);
+    if (!b) return;
+    const nama = document.getElementById('eNama').value.trim();
+    if (!nama) { showToast('Nama barang wajib diisi!', 'error'); return; }
+    b.nama = nama;
+    b.kat  = document.getElementById('eKat').value;
+    b.ket  = document.getElementById('eKet').value.trim();
+    if (!document.getElementById('eStatus').disabled) b.status = document.getElementById('eStatus').value;
+    const newImg = getImgData('eImgPrev');
+    if (newImg && newImg !== b.img) b.img = newImg;
+    saveInventaris(inv);
+    addRiwayat('tambah', `Barang diperbarui: ${b.nama}`);
+    closeModal('modalEdit');
+    render();
+    showToast('Barang berhasil diperbarui!', 'success');
+  }
+
+  render();
+</script>
+</body>
+</html>

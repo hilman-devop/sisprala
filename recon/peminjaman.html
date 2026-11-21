@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pinzup — Peminjaman</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav class="navbar">
+  <a class='nav-brand' href='/?dashboard=1'>
+    <img src="logo.svg" style="width:36px;height:40px;filter:drop-shadow(0 4px 8px rgba(25,196,178,0.4))">
+    <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:800;letter-spacing:-0.5px">Pin<span style="color:#19C4B2">zup</span></span>
+  </a>
+  <div class="nav-links">
+    <a class='nav-link' href='/'><span class="icon">🏠</span><span>Beranda</span></a>
+    <a class='nav-link' href='/?dashboard=1'><span class="icon">⊞</span><span>Dashboard</span></a>
+    <a class='nav-link' href='/inventaris'><span class="icon">📦</span><span>Inventaris</span></a>
+    <a class='nav-link active' href='/peminjaman'><span class="icon">📋</span><span>Peminjaman</span></a>
+    <a class='nav-link' href='/riwayat'><span class="icon">📜</span><span>Riwayat</span></a>
+  </div>
+  <div class="nav-right">
+    <div id="clock">--:--</div>
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle tema">☀️</button>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Peminjaman</h1>
+      <p class="page-sub">Catat dan pantau peminjaman barang secara real-time.</p>
+    </div>
+    <div class="page-header-actions">
+      <button class="btn btn-outline btn-sm" onclick="exportCSV('peminjaman')">⬇ Export CSV</button>
+      <button class="btn btn-primary" onclick="openModal('modalTambah')">+ Catat Peminjaman</button>
+    </div>
+  </div>
+
+  <!-- ALERT -->
+  <div class="alert alert-danger" id="alertTerlambat" style="display:none">
+    <span class="alert-icon">⚠️</span>
+    <div class="alert-text"><strong>Ada <span id="alertJml">0</span> barang terlambat dikembalikan!</strong> Segera hubungi peminjam.</div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-grid" style="grid-template-columns:repeat(4,1fr)">
+    <div class="stat-card stat-blue">
+      <div class="stat-card-accent"></div>
+      <div class="stat-icon-wrap">📋</div>
+      <div class="stat-num" id="sTotal">0</div>
+      <div class="stat-label">Total Catatan</div>
+    </div>
+    <div class="stat-card stat-orange">
+      <div class="stat-card-accent"></div>
+      <div class="stat-icon-wrap">🔄</div>
+      <div class="stat-num" id="sAktif">0</div>
+      <div class="stat-label">Aktif</div>
+    </div>
+    <div class="stat-card stat-red">
+      <div class="stat-card-accent"></div>
+      <div class="stat-icon-wrap">⏰</div>
+      <div class="stat-num" id="sTerlambat">0</div>
+      <div class="stat-label">Terlambat</div>
+    </div>
+    <div class="stat-card stat-green">
+      <div class="stat-card-accent"></div>
+      <div class="stat-icon-wrap">✅</div>
+      <div class="stat-num" id="sSelesai">0</div>
+      <div class="stat-label">Selesai</div>
+    </div>
+  </div>
+
+  <!-- FILTER & SEARCH -->
+  <div class="filter-bar">
+    <div class="search-box" style="max-width:280px">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchInp" placeholder="Cari nama peminjam…" oninput="render()">
+    </div>
+    <button class="filter-btn active" onclick="setFilter('semua',this)">Semua</button>
+    <button class="filter-btn" onclick="setFilter('aktif',this)">🔄 Aktif</button>
+    <button class="filter-btn" onclick="setFilter('terlambat',this)">⏰ Terlambat</button>
+    <button class="filter-btn" onclick="setFilter('selesai',this)">✅ Selesai</button>
+  </div>
+
+  <!-- TABLE -->
+  <div class="card">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Foto</th>
+            <th>Peminjam</th>
+            <th>Barang</th>
+            <th>Tgl Pinjam</th>
+            <th>Batas Kembali</th>
+            <th>Sisa Hari</th>
+            <th>Status</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL: CATAT PEMINJAMAN -->
+<div class="modal-bg" id="modalTambah">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-header">
+      <span class="modal-title">📋 Catat Peminjaman Baru</span>
+      <button class="modal-close" onclick="closeModal('modalTambah')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid" style="grid-template-columns:1fr 1fr">
+        <div class="form-group">
+          <label>Nama Peminjam *</label>
+          <input type="text" id="pNama" placeholder="cth. Andi Pratama">
+        </div>
+        <div class="form-group">
+          <label>Kontak / No. HP</label>
+          <input type="text" id="pKontak" placeholder="cth. 0812xxxxxxxx">
+        </div>
+        <div class="form-group full">
+          <label>Pilih Barang *</label>
+          <input type="text" id="pBarangDisplay" placeholder="Klik untuk pilih barang tersedia…"
+            readonly style="cursor:pointer" onclick="openPickerModal()">
+          <input type="hidden" id="pBarangId">
+        </div>
+        <div class="form-group">
+          <label>Tanggal Pinjam *</label>
+          <input type="date" id="pTglPinjam">
+        </div>
+        <div class="form-group">
+          <label>Batas Pengembalian *</label>
+          <input type="date" id="pTglKembali">
+        </div>
+        <div class="form-group full">
+          <label>Catatan</label>
+          <input type="text" id="pCatatan" placeholder="Keperluan, kondisi saat dipinjam, dll.">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modalTambah')">Batal</button>
+      <button class="btn btn-primary" onclick="tambahPeminjaman()">Simpan Catatan</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: DETAIL PEMINJAMAN -->
+<div class="modal-bg" id="modalDetail">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <span class="modal-title">📋 Detail Peminjaman</span>
+      <button class="modal-close" onclick="closeModal('modalDetail')">✕</button>
+    </div>
+    <div class="modal-body" id="detailBody"></div>
+    <div class="modal-footer" id="detailFooter"></div>
+  </div>
+</div>
+
+<!-- MODAL: PICKER BARANG -->
+<div class="modal-bg" id="modalPicker">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <span class="modal-title">📦 Pilih Barang</span>
+      <button class="modal-close" onclick="closeModal('modalPicker')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="search-box" style="margin-bottom:14px">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="pickerSearch" placeholder="Cari barang…" oninput="renderPicker()">
+      </div>
+      <p style="font-size:12px;color:var(--text-2);margin-bottom:14px;font-weight:500">
+        Hanya barang berstatus <span style="color:var(--success);font-weight:700">Ready</span> yang dapat dipilih.
+      </p>
+      <div class="barang-picker" id="barangPicker"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modalPicker')">Batal</button>
+      <button class="btn btn-primary" onclick="konfirmasiPilih()">Pilih Barang Ini</button>
+    </div>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script>
+  let filterMode = 'semua';
+  let pickerSel  = null;
+
+  // Init dates
+  (function() {
+    const t   = new Date();
+    const fmt = d => d.toISOString().split('T')[0];
+    document.getElementById('pTglPinjam').value  = fmt(t);
+    const d2 = new Date(t); d2.setDate(d2.getDate() + 7);
+    document.getElementById('pTglKembali').value = fmt(d2);
+  })();
+
+  startClock();
+
+  function setFilter(mode, btn) {
+    filterMode = mode;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    render();
+  }
+
+  function render() {
+    const inv  = getInventaris();
+    const pinj = getPeminjaman();
+    const q    = (document.getElementById('searchInp').value || '').toLowerCase();
+
+    const aktif     = pinj.filter(p => getStatusPinjam(p) === 'aktif').length;
+    const terlambat = pinj.filter(p => getStatusPinjam(p) === 'terlambat').length;
+    const selesai   = pinj.filter(p => getStatusPinjam(p) === 'selesai').length;
+
+    document.getElementById('sTotal').textContent     = pinj.length;
+    document.getElementById('sAktif').textContent     = aktif;
+    document.getElementById('sTerlambat').textContent = terlambat;
+    document.getElementById('sSelesai').textContent   = selesai;
+
+    const alertEl = document.getElementById('alertTerlambat');
+    alertEl.style.display = terlambat > 0 ? 'flex' : 'none';
+    if (terlambat > 0) document.getElementById('alertJml').textContent = terlambat;
+
+    let list = pinj;
+    if (filterMode !== 'semua') list = list.filter(p => getStatusPinjam(p) === filterMode);
+    if (q) list = list.filter(p => p.nama.toLowerCase().includes(q) || (p.kontak||'').includes(q));
+
+    const tbody = document.getElementById('tableBody');
+    if (!list.length) {
+      tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><span class="empty-icon">📋</span><p>Tidak ada data peminjaman</p></div></td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = list.map(p => {
+      const b    = inv.find(x => x.id === p.barangId);
+      const st   = getStatusPinjam(p);
+      const sisa = getSisaHari(p.tglKembali);
+
+      const thumbHtml = b && b.img
+        ? `<img class="td-thumb" src="${b.img}" alt="${b.nama}">`
+        : `<div class="td-thumb-ph">${b ? getEmoji(b.kat) : '📦'}</div>`;
+
+      const sisaHtml = st === 'selesai'
+        ? `<span style="color:var(--text-3)">—</span>`
+        : sisa < 0  ? `<span class="text-red">Lewat ${Math.abs(sisa)}h</span>`
+        : sisa === 0 ? `<span class="text-orange">Hari ini!</span>`
+        : `<span class="${sisa <= 2 ? 'text-orange' : ''}">${sisa} hari</span>`;
+
+      const pillClass = st === 'aktif' ? 'pill-orange' : st === 'terlambat' ? 'pill-red' : 'pill-green';
+      const pillLabel = st === 'aktif' ? '🔄 Aktif' : st === 'terlambat' ? '⏰ Terlambat' : '✅ Selesai';
+
+      const aksiHtml = st !== 'selesai'
+        ? `<div style="display:flex;gap:6px">
+             <button class="btn btn-outline btn-xs" onclick="bukaDetail(${p.id})">Detail</button>
+             <button class="btn btn-success btn-xs" onclick="kembalikan(${p.id})">✅ Kembali</button>
+             <button class="btn btn-danger btn-xs"  onclick="hapusPinjam(${p.id})">🗑️</button>
+           </div>`
+        : `<div style="display:flex;gap:6px">
+             <button class="btn btn-outline btn-xs" onclick="bukaDetail(${p.id})">Detail</button>
+             <button class="btn btn-ghost btn-xs"   onclick="hapusPinjam(${p.id})">🗑️ Hapus</button>
+           </div>`;
+
+      return `
+        <tr class="${st === 'terlambat' ? 'row-late' : ''}">
+          <td>${thumbHtml}</td>
+          <td>
+            <div class="text-bold">${p.nama}</div>
+            ${p.kontak ? `<div class="text-muted">${p.kontak}</div>` : ''}
+          </td>
+          <td>
+            <div class="text-bold">${b ? b.nama : '<span style="color:var(--text-3)">(dihapus)</span>'}</div>
+            <div class="text-muted">${b ? b.kat : ''}${p.catatan ? ' · ' + p.catatan.slice(0,20) + (p.catatan.length>20?'…':'') : ''}</div>
+          </td>
+          <td style="color:var(--text-2);font-size:13px">${fmtDate(p.tglPinjam)}</td>
+          <td style="color:var(--text-2);font-size:13px">${fmtDate(p.tglKembali)}</td>
+          <td>${sisaHtml}</td>
+          <td><span class="pill ${pillClass}">${pillLabel}</span></td>
+          <td>${aksiHtml}</td>
+        </tr>`;
+    }).join('');
+  }
+
+  // ── PICKER ──
+  function openPickerModal() {
+    pickerSel = null;
+    document.getElementById('pickerSearch').value = '';
+    renderPicker();
+    openModal('modalPicker');
+  }
+
+  function renderPicker() {
+    const inv = getInventaris();
+    const q   = (document.getElementById('pickerSearch').value || '').toLowerCase();
+    const picker = document.getElementById('barangPicker');
+    const list   = q ? inv.filter(b => b.nama.toLowerCase().includes(q) || b.kat.toLowerCase().includes(q)) : inv;
+
+    if (!list.length) {
+      picker.innerHTML = `<div class="empty-state"><span class="empty-icon">📭</span><p>Inventaris kosong</p></div>`;
+      return;
+    }
+
+    picker.innerHTML = list.map(b => {
+      const st = getBarangStatus(b);
+      const isReady = st === 'ready';
+      const imgHtml = b.img
+        ? `<img class="bpick-img" src="${b.img}" alt="${b.nama}">`
+        : `<div class="bpick-ph">${getEmoji(b.kat)}</div>`;
+      const stLabel = st === 'ready' ? '● Ready' : st === 'dipinjam' ? '⛔ Dipinjam' : '⚠ Non-Ready';
+      const isSelected = pickerSel === b.id;
+      return `
+        <div class="bpick-card ${!isReady ? 'disabled' : ''} ${isSelected ? 'selected' : ''}" data-id="${b.id}"
+             onclick="${isReady ? `selectBarang(this,${b.id})` : ''}">
+          ${imgHtml}
+          <div class="bpick-name">${b.nama}</div>
+          <div class="bpick-status ${st}">${stLabel}</div>
+        </div>`;
+    }).join('');
+  }
+
+  function selectBarang(el, id) {
+    document.querySelectorAll('.bpick-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    pickerSel = id;
+  }
+
+  function konfirmasiPilih() {
+    if (!pickerSel) { showToast('Pilih satu barang terlebih dahulu!', 'warning'); return; }
+    const b = getInventaris().find(x => x.id === pickerSel);
+    if (!b) return;
+    document.getElementById('pBarangDisplay').value = `${b.nama} · ${b.kat}`;
+    document.getElementById('pBarangId').value      = pickerSel;
+    closeModal('modalPicker');
+  }
+
+  // ── TAMBAH ──
+  function tambahPeminjaman() {
+    const nama     = document.getElementById('pNama').value.trim();
+    const kontak   = document.getElementById('pKontak').value.trim();
+    const barangId = parseInt(document.getElementById('pBarangId').value);
+    const tglP     = document.getElementById('pTglPinjam').value;
+    const tglK     = document.getElementById('pTglKembali').value;
+    const catatan  = document.getElementById('pCatatan').value.trim();
+
+    if (!nama)     { showToast('Nama peminjam wajib diisi!', 'error'); return; }
+    if (!barangId) { showToast('Pilih barang terlebih dahulu!', 'error'); return; }
+    if (!tglP || !tglK) { showToast('Tanggal wajib diisi!', 'error'); return; }
+    if (tglK < tglP)    { showToast('Batas kembali harus setelah tanggal pinjam!', 'error'); return; }
+
+    const inv = getInventaris();
+    const b   = inv.find(x => x.id === barangId);
+    if (!b || getBarangStatus(b) !== 'ready') { showToast('Barang tidak lagi tersedia!', 'error'); return; }
+
+    const pinj = getPeminjaman();
+    pinj.unshift({ id: Date.now(), nama, kontak, barangId, tglPinjam: tglP, tglKembali: tglK, catatan, selesai: false });
+    savePeminjaman(pinj);
+    addRiwayat('pinjam', `${nama} meminjam ${b.nama} — kembali ${fmtDate(tglK)}`, { barangId, nama });
+
+    closeModal('modalTambah');
+    document.getElementById('pNama').value          = '';
+    document.getElementById('pKontak').value        = '';
+    document.getElementById('pBarangDisplay').value = '';
+    document.getElementById('pBarangId').value      = '';
+    document.getElementById('pCatatan').value       = '';
+    pickerSel = null;
+    render();
+    showToast(`Peminjaman "${b.nama}" oleh ${nama} berhasil dicatat!`, 'success');
+  }
+
+  // ── DETAIL ──
+  function bukaDetail(id) {
+    const pinj = getPeminjaman();
+    const p    = pinj.find(x => x.id === id);
+    if (!p) return;
+    const inv  = getInventaris();
+    const b    = inv.find(x => x.id === p.barangId);
+    const st   = getStatusPinjam(p);
+    const sisa = getSisaHari(p.tglKembali);
+    const pillClass = st === 'aktif' ? 'pill-orange' : st === 'terlambat' ? 'pill-red' : 'pill-green';
+
+    document.getElementById('detailBody').innerHTML = `
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px">
+        <div style="width:60px;height:60px;border-radius:12px;overflow:hidden;background:var(--bg-4);display:flex;align-items:center;justify-content:center;font-size:28px;border:1px solid var(--border)">
+          ${b && b.img ? `<img src="${b.img}" style="width:100%;height:100%;object-fit:cover">` : (b ? getEmoji(b.kat) : '📦')}
+        </div>
+        <div>
+          <div style="font-size:16px;font-weight:700;color:var(--text)">${p.nama}</div>
+          <div style="font-size:13px;color:var(--text-2);margin-top:3px">${p.kontak || 'Tidak ada kontak'}</div>
+          <span class="pill ${pillClass}" style="margin-top:6px;display:inline-flex">${st === 'aktif' ? '🔄 Aktif' : st === 'terlambat' ? '⏰ Terlambat' : '✅ Selesai'}</span>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        ${[
+          ['📦 Barang', b ? b.nama : '(dihapus)'],
+          ['🏷️ Kategori', b ? b.kat : '—'],
+          ['📅 Tgl Pinjam', fmtDate(p.tglPinjam)],
+          ['🗓️ Batas Kembali', fmtDate(p.tglKembali)],
+          ['⏱️ Sisa Waktu', st === 'selesai' ? 'Sudah selesai' : sisa < 0 ? `<span class="text-red">Terlambat ${Math.abs(sisa)} hari</span>` : sisa === 0 ? `<span class="text-orange">Hari ini!</span>` : `${sisa} hari lagi`],
+          ['📝 Catatan', p.catatan || '—'],
+        ].map(([label, val]) => `
+          <div style="background:var(--bg-4);border-radius:8px;padding:12px;border:1px solid var(--border)">
+            <div style="font-size:11px;color:var(--text-2);font-weight:600;margin-bottom:4px">${label}</div>
+            <div style="font-size:13px;font-weight:600;color:var(--text)">${val}</div>
+          </div>
+        `).join('')}
+      </div>`;
+
+    const footer = document.getElementById('detailFooter');
+    if (st !== 'selesai') {
+      footer.innerHTML = `
+        <button class="btn btn-outline" onclick="closeModal('modalDetail')">Tutup</button>
+        <button class="btn btn-success" onclick="kembalikan(${p.id});closeModal('modalDetail')">✅ Tandai Sudah Kembali</button>`;
+    } else {
+      footer.innerHTML = `<button class="btn btn-primary" onclick="closeModal('modalDetail')">Tutup</button>`;
+    }
+
+    openModal('modalDetail');
+  }
+
+  function kembalikan(id) {
+    const pinj = getPeminjaman();
+    const p    = pinj.find(x => x.id === id);
+    if (!p) return;
+    p.selesai = true;
+    savePeminjaman(pinj);
+    const inv = getInventaris();
+    const b   = inv.find(x => x.id === p.barangId);
+    addRiwayat('kembali', `${p.nama} mengembalikan ${b ? b.nama : 'barang'}`);
+    render();
+    showToast('Barang berhasil dikembalikan! ✅', 'success');
+  }
+
+  function hapusPinjam(id) {
+    if (!confirm('Hapus catatan peminjaman ini?')) return;
+    savePeminjaman(getPeminjaman().filter(p => p.id !== id));
+    render();
+    showToast('Catatan dihapus.', 'success');
+  }
+
+  render();
+</script>
+</body>
+</html>

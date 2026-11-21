@@ -1,0 +1,19 @@
+# Render.com blueprint — https://render.com/docs/blueprint-spec
+# Deploy: push ke Git, lalu "New > Blueprint" dan pilih repo ini.
+services:
+  - type: web
+    name: pinzup
+    runtime: node
+    plan: starter            # 'free' tidak mendukung disk → data SQLite hilang saat redeploy
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: PORT
+        value: "10000"
+    disk:
+      name: pinzup-data
+      mountPath: /opt/render/project/src/data   # DB_PATH default ada di ./data
+      sizeGB: 1

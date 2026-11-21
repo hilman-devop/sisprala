@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pinzup — Riwayat</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav class="navbar">
+  <a class='nav-brand' href='/?dashboard=1'>
+    <img src="logo.svg" style="width:36px;height:40px;filter:drop-shadow(0 4px 8px rgba(25,196,178,0.4))">
+    <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:800;letter-spacing:-0.5px">Pin<span style="color:#19C4B2">zup</span></span>
+  </a>
+  <div class="nav-links">
+    <a class='nav-link' href='/'><span class="icon">🏠</span><span>Beranda</span></a>
+    <a class='nav-link' href='/?dashboard=1'><span class="icon">⊞</span><span>Dashboard</span></a>
+    <a class='nav-link' href='/inventaris'><span class="icon">📦</span><span>Inventaris</span></a>
+    <a class='nav-link' href='/peminjaman'><span class="icon">📋</span><span>Peminjaman</span></a>
+    <a class='nav-link active' href='/riwayat'><span class="icon">📜</span><span>Riwayat</span></a>
+  </div>
+  <div class="nav-right">
+    <div id="clock">--:--</div>
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle tema">☀️</button>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Riwayat Aktivitas</h1>
+      <p class="page-sub">Log semua aktivitas peminjaman, pengembalian, dan perubahan barang.</p>
+    </div>
+    <div class="page-header-actions">
+      <span id="totalCount" style="font-size:13px;color:var(--text-2);padding:8px 14px;background:var(--bg-4);border-radius:8px;border:1px solid var(--border)">0 aktivitas</span>
+      <button class="btn btn-outline btn-sm" style="color:var(--danger);border-color:rgba(239,68,68,0.3)" onclick="hapusSemua()">🗑️ Hapus Semua</button>
+    </div>
+  </div>
+
+  <!-- FILTER -->
+  <div class="filter-bar">
+    <div class="search-box" style="max-width:280px">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchInp" placeholder="Cari aktivitas…" oninput="render()">
+    </div>
+    <button class="filter-btn active" onclick="setFilter('semua',this)">Semua</button>
+    <button class="filter-btn" onclick="setFilter('pinjam',this)">📋 Peminjaman</button>
+    <button class="filter-btn" onclick="setFilter('kembali',this)">✅ Pengembalian</button>
+    <button class="filter-btn" onclick="setFilter('tambah',this)">📦 Barang</button>
+  </div>
+
+  <!-- RIWAYAT TIMELINE -->
+  <div class="card" id="riwayatCard">
+    <div id="riwayatList"></div>
+  </div>
+
+</div>
+
+<script src="data.js"></script>
+<script>
+  let filterMode = 'semua';
+
+  startClock();
+
+  function setFilter(mode, btn) {
+    filterMode = mode;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    render();
+  }
+
+  function render() {
+    let list = getRiwayat();
+    const q  = (document.getElementById('searchInp').value || '').toLowerCase();
+
+    if (filterMode !== 'semua') list = list.filter(r => r.tipe === filterMode);
+    if (q) list = list.filter(r => r.teks.toLowerCase().includes(q));
+
+    document.getElementById('totalCount').textContent = `${list.length} aktivitas`;
+
+    const el = document.getElementById('riwayatList');
+
+    if (!list.length) {
+      el.innerHTML = `<div class="empty-state"><span class="empty-icon">📜</span><p>Belum ada aktivitas tercatat</p><p class="empty-sub">Mulai tambah barang atau catat peminjaman</p></div>`;
+      return;
+    }
+
+    // Group by date
+    const groups = {};
+    list.forEach(r => {
+      const day = new Date(r.waktu).toLocaleDateString('id-ID', {
+        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+      });
+      if (!groups[day]) groups[day] = [];
+      groups[day].push(r);
+    });
+
+    const icons  = { pinjam: '📋', kembali: '✅', tambah: '📦' };
+    const colors = {
+      pinjam:  { bg: 'rgba(108,99,255,0.15)', text: 'var(--accent)' },
+      kembali: { bg: 'rgba(34,197,94,0.15)',  text: 'var(--success)' },
+      tambah:  { bg: 'rgba(236,72,153,0.15)', text: '#ec4899' },
+    };
+
+    el.innerHTML = Object.entries(groups).map(([day, items]) => `
+      <div class="day-divider">
+        <span style="background:var(--bg-4);border:1px solid var(--border);padding:3px 12px;border-radius:99px">${day}</span>
+      </div>
+      ${items.map(r => {
+        const c   = colors[r.tipe] || { bg: 'var(--bg-4)', text: 'var(--text-2)' };
+        const icon = icons[r.tipe] || 'ℹ️';
+        const jam  = new Date(r.waktu).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+        return `
+          <div class="riwayat-item fade-in">
+            <div class="riwayat-icon" style="background:${c.bg}; color:${c.text}">${icon}</div>
+            <div class="riwayat-info">
+              <div class="riwayat-text">${r.teks}</div>
+              <div class="riwayat-time">${jam}</div>
+            </div>
+            <div style="font-size:11px;color:var(--text-3);white-space:nowrap;padding-left:8px">
+              ${getTipeLabel(r.tipe)}
+            </div>
+          </div>`;
+      }).join('')}
+    `).join('');
+  }
+
+  function getTipeLabel(tipe) {
+    const map = { pinjam: 'Peminjaman', kembali: 'Pengembalian', tambah: 'Inventaris' };
+    return map[tipe] || tipe;
+  }
+
+  function hapusSemua() {
+    const riw = getRiwayat();
+    if (!riw.length) { showToast('Riwayat sudah kosong.', 'warning'); return; }
+    if (!confirm(`Hapus semua ${riw.length} riwayat aktivitas? Tindakan ini tidak bisa dibatalkan.`)) return;
+    saveRiwayat([]);
+    render();
+    showToast('Semua riwayat berhasil dihapus.', 'success');
+  }
+
+  render();
+</script>
+</body>
+</html>

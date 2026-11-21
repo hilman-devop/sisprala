@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 110" fill="none">
+  <!-- P shape: stem -->
+  <rect x="10" y="8" width="14" height="70" rx="7" fill="#1B2E6B"/>
+  <!-- P shape: top crossbar -->
+  <rect x="10" y="8" width="44" height="14" rx="7" fill="#1B2E6B"/>
+  <!-- P shape: bowl right arc -->
+  <path d="M54 8 Q76 8 76 28 Q76 48 54 48 L24 48 L24 36 L54 36 Q62 36 62 28 Q62 20 54 20 L10 20 L10 8 Z" fill="#1B2E6B"/>
+  <!-- P shape: bottom crossbar -->
+  <rect x="10" y="36" width="44" height="13" rx="6" fill="#1B2E6B"/>
+
+  <!-- 3D cube inside bowl -->
+  <polygon points="40,16 50,21 40,26 30,21" fill="#1B2E6B" stroke="#2a4a8a" stroke-width="0.8"/>
+  <polygon points="50,21 50,31 40,36 40,26" fill="#0f1e45"/>
+  <polygon points="30,21 30,31 40,36 40,26" fill="#19C4B2"/>
+
+  <!-- Teal return arrow: right vertical -->
+  <rect x="66" y="36" width="12" height="50" rx="6" fill="#19C4B2"/>
+  <!-- Teal return arrow: bottom U curve -->
+  <path d="M34 58 L34 82 Q34 98 50 98 Q66 98 66 82 L66 86 L78 86 L78 82 Q78 86 78 86 Q78 110 50 110 Q22 110 22 82 L22 58 Z" fill="#19C4B2"/>
+  <!-- Arrowhead pointing up -->
+  <polygon points="72,26 84,44 60,44" fill="#19C4B2"/>
+</svg>
