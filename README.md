@@ -5,7 +5,9 @@
 
 **Stack:** Node.js 22 · Express · SQLite · Security
 
-![Preview](https://raw.githubusercontent.com/hilman-devop/sisprala/main/shot-zoom.png)
+![Landing page publik Pinzup](screenshots/portfolio-preview.jpg)
+
+*Screenshot halaman publik [pinzup.asia](https://pinzup.asia/), diambil 25 November 2026 tanpa login atau mengakses data peminjaman. Tampilan deployment bisa berbeda dari source repository.*
 
 ## Ringkasan
 
